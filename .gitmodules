@@ -1,9 +1,12 @@
 [submodule "src/llvm-project"]
 	path = src/llvm-project
-	url = https://github.com/llvm/llvm-project
+	url = https://github.com/huangh-git/llvm-project.git
+	branch = release14-memswasm
+	# url = https://github.com/llvm/llvm-project
 [submodule "src/wasi-libc"]
 	path = src/wasi-libc
-	url = https://github.com/CraneStation/wasi-libc
+	url = https://github.com/huangh-git/wasi-libc
+	# url = https://github.com/CraneStation/wasi-libc
 [submodule "src/config"]
 	path = src/config
 	url = https://git.savannah.gnu.org/git/config.git

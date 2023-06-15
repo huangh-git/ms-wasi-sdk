@@ -56,7 +56,7 @@ clean:
 build/llvm.BUILT:
 	mkdir -p build/llvm
 	cd build/llvm && cmake -G Ninja \
-		-DCMAKE_BUILD_TYPE=MinSizeRel \
+		-DCMAKE_BUILD_TYPE=Debug \
 		-DLLVM_ENABLE_TERMINFO=OFF \
 		-DLLVM_ENABLE_ZLIB=OFF \
 		-DLLVM_ENABLE_ZSTD=OFF \
@@ -110,8 +110,8 @@ build/wasi-libc.BUILT: build/llvm.BUILT
 		CC=$(BUILD_PREFIX)/bin/clang \
 		AR=$(BUILD_PREFIX)/bin/llvm-ar \
 		NM=$(BUILD_PREFIX)/bin/llvm-nm \
-		SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
-		THREAD_MODEL=posix
+		SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot #\
+		# THREAD_MODEL=posix
 	touch build/wasi-libc.BUILT
 
 build/compiler-rt.BUILT: build/llvm.BUILT build/wasi-libc.BUILT
@@ -182,32 +182,33 @@ LIBCXX_CMAKE_FLAGS = \
     -DUNIX:BOOL=ON \
     --debug-trycompile
 
-build/libcxx.BUILT: build/llvm.BUILT build/compiler-rt.BUILT build/wasi-libc.BUILT
-	# Do the build.
-	mkdir -p build/libcxx
-	cd build/libcxx && cmake -G Ninja $(LIBCXX_CMAKE_FLAGS:@PTHREAD@=OFF) \
-		-DCMAKE_SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
-		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP)" \
-		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP)" \
-		-DLIBCXX_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
-		-DLIBCXXABI_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
-		-DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
-		$(LLVM_PROJ_DIR)/runtimes
-	ninja $(NINJA_FLAGS) -C build/libcxx
-	mkdir -p build/libcxx-threads
-	cd build/libcxx-threads && cmake -G Ninja $(LIBCXX_CMAKE_FLAGS:@PTHREAD@=ON) \
-		-DCMAKE_SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
-		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP) -pthread" \
-		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP) -pthread" \
-		-DLIBCXX_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi-threads \
-		-DLIBCXXABI_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi-threads \
-		-DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
-		$(LLVM_PROJ_DIR)/runtimes
-	ninja $(NINJA_FLAGS) -C build/libcxx-threads
-	# Do the install.
-	DESTDIR=$(DESTDIR) ninja $(NINJA_FLAGS) -C build/libcxx install
-	DESTDIR=$(DESTDIR) ninja $(NINJA_FLAGS) -C build/libcxx-threads install
-	touch build/libcxx.BUILT
+# cxx is not need now, and it can not build sucessefully now for some reason
+# build/libcxx.BUILT: build/llvm.BUILT build/compiler-rt.BUILT build/wasi-libc.BUILT
+# 	# Do the build.
+# 	mkdir -p build/libcxx
+# 	cd build/libcxx && cmake -G Ninja $(LIBCXX_CMAKE_FLAGS:@PTHREAD@=OFF) \
+# 		-DCMAKE_SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
+# 		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP)" \
+# 		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP)" \
+# 		-DLIBCXX_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
+# 		-DLIBCXXABI_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi \
+# 		-DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+# 		$(LLVM_PROJ_DIR)/runtimes
+# 	ninja $(NINJA_FLAGS) -C build/libcxx
+# 	mkdir -p build/libcxx-threads
+# 	cd build/libcxx-threads && cmake -G Ninja $(LIBCXX_CMAKE_FLAGS:@PTHREAD@=OFF) \
+# 		-DCMAKE_SYSROOT=$(BUILD_PREFIX)/share/wasi-sysroot \
+# 		-DCMAKE_C_FLAGS="$(DEBUG_PREFIX_MAP) -pthread" \
+# 		-DCMAKE_CXX_FLAGS="$(DEBUG_PREFIX_MAP) -pthread" \
+# 		-DLIBCXX_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi-threads \
+# 		-DLIBCXXABI_LIBDIR_SUFFIX=$(ESCAPE_SLASH)/wasm32-wasi-threads \
+# 		-DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+# 		$(LLVM_PROJ_DIR)/runtimes
+# 	ninja $(NINJA_FLAGS) -C build/libcxx-threads
+# 	# Do the install.
+# 	DESTDIR=$(DESTDIR) ninja $(NINJA_FLAGS) -C build/libcxx install
+# 	DESTDIR=$(DESTDIR) ninja $(NINJA_FLAGS) -C build/libcxx-threads install
+# 	touch build/libcxx.BUILT
 
 build/config.BUILT:
 	mkdir -p $(BUILD_PREFIX)/share/misc
@@ -217,7 +218,7 @@ build/config.BUILT:
 	cp wasi-sdk-pthread.cmake $(BUILD_PREFIX)/share/cmake
 	touch build/config.BUILT
 
-build: build/llvm.BUILT build/wasi-libc.BUILT build/compiler-rt.BUILT build/libcxx.BUILT build/config.BUILT
+build: build/llvm.BUILT build/wasi-libc.BUILT build/compiler-rt.BUILT #build/libcxx.BUILT build/config.BUILT
 
 strip: build/llvm.BUILT
 	./strip_symbols.sh $(BUILD_PREFIX)/bin
