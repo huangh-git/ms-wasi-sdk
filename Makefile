@@ -66,7 +66,7 @@ build/llvm.BUILT:
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 \
 		-DCMAKE_INSTALL_PREFIX=$(PREFIX) \
 		-DLLVM_TARGETS_TO_BUILD=WebAssembly \
-		-DLLVM_DEFAULT_TARGET_TRIPLE=wasm32-wasi \
+		-DLLVM_DEFAULT_TARGET_TRIPLE=wasm32-unknown-wasi \
 		-DLLVM_ENABLE_PROJECTS="lld;clang;clang-tools-extra" \
 		$(if $(patsubst 9,,$(CLANG_VERSION)), \
 	             $(if $(patsubst 10,,$(CLANG_VERSION)), \
